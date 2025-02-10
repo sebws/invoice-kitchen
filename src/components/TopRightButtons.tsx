@@ -5,22 +5,16 @@ import {
   DialogTitle,
   DialogDescription,
 } from './ui/dialog';
-import { Label } from './ui/label';
 import {
   CakeSlice,
   FilePlus,
   PrinterIcon,
-  SaveIcon,
   XOctagon,
 } from 'lucide-react';
 import React from 'react';
 import { Button } from './ui/button';
 import { DialogHeader, DialogFooter } from './ui/dialog';
-import { Input } from './ui/input';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card';
-import { Turnstile } from '@marsidev/react-turnstile';
-import { set } from 'mobx';
-import { ReloadIcon } from '@radix-ui/react-icons';
 
 const NewButton = () => {
   const [open, setOpen] = React.useState(false);
@@ -51,35 +45,16 @@ const NewButton = () => {
 };
 
 const PrintButton = () => {
-  const [open, setOpen] = React.useState(false);
-
   return (
     <>
       <button
         className="p-4 flex items-center gap-2 hover:text-purple-700 "
         onClick={() => {
           window.print();
-          setOpen(true);
         }}
       >
         <PrinterIcon /> Print
       </button>
-      <AfterPrintPdfDialog open={open} setOpen={setOpen} />
-    </>
-  );
-};
-
-const PDFButton = () => {
-  const [open, setOpen] = React.useState(false);
-  return (
-    <>
-      <button
-        className="p-4 flex items-center gap-2 hover:text-purple-700 "
-        onClick={() => setOpen(true)}
-      >
-        <SaveIcon /> PDF
-      </button>
-      <EmailMePdfDialog open={open} setOpen={setOpen} />
     </>
   );
 };
@@ -196,167 +171,11 @@ const PresetButton = () => {
   );
 };
 
-const useCountdown = (initialSeconds: number, startCountdown: boolean) => {
-  const [seconds, setSeconds] = React.useState(initialSeconds);
-
-  React.useEffect(() => {
-    if (startCountdown && seconds > 0) {
-      const timer = setTimeout(() => {
-        setSeconds(seconds - 1);
-      }, 1000);
-
-      return () => clearTimeout(timer);
-    }
-    if (!startCountdown) {
-      setSeconds(initialSeconds);
-    }
-  }, [seconds, startCountdown, initialSeconds]);
-
-  return seconds;
-};
-
-const EmailDialog = ({
-  open,
-  setOpen,
-  title,
-  description,
-  additionalDescription,
-}: {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  title: string;
-  description: string;
-  additionalDescription?: string;
-}) => {
-  const { sendInvoice } = useAppStateStore();
-  const [token, setToken] = React.useState('');
-  const [email, setEmail] = React.useState('');
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState('');
-  const [sent, setSent] = React.useState(false);
-
-  const initialCountdownSeconds = 13;
-  const countdownSeconds = useCountdown(initialCountdownSeconds, loading);
-
-  const send = async () => {
-    setLoading(true);
-    const result = await sendInvoice(email, token);
-    if (result) {
-      setLoading(false);
-      setSent(true);
-    } else {
-      setLoading(false);
-      setError(
-        `Something went wrong and the chef could not send your email. The chef is looking into it.`,
-      );
-    }
-  };
-
-  const content = () => {
-    return (
-      <>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-          {additionalDescription && (
-            <DialogDescription>{additionalDescription}</DialogDescription>
-          )}
-        </DialogHeader>
-        <div className="grid gap-4 py-2">
-          <div className="grid gap-4">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-              }}
-              placeholder="chef@invoicekitchen.com"
-            />
-          </div>
-        </div>
-        {/* <Turnstile
-            siteKey="0x4AAAAAAAIMHH3XH4HezMXA"
-            onSuccess={setToken}
-            options={{
-              theme: 'light',
-              appearance: 'interaction-only',
-            }}
-          /> */}
-
-        <DialogFooter>
-          <Button
-            type="submit"
-            disabled={!email || loading}
-            onClick={() => send()}
-          >
-            {loading && (
-              <>
-                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                Sending... (ETA ~{countdownSeconds} seconds)
-              </>
-            )}
-            {!loading && 'Send'}
-          </Button>
-        </DialogFooter>
-      </>
-    );
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[425px]">
-        {sent && (
-          <DialogHeader>
-            <DialogTitle>Success!</DialogTitle>
-            <DialogDescription>
-              The chef just delivered a hot PDF invoice direct to your inbox.
-            </DialogDescription>
-          </DialogHeader>
-        )}
-        {!sent && content()}
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-const AfterPrintPdfDialog = ({
-  open,
-  setOpen,
-}: {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-}) => (
-  <EmailDialog
-    open={open}
-    setOpen={setOpen}
-    title="Thanks for using Invoice Kitchen!"
-    description="Enter your email below and we'll send you a PDF copy of your invoice for your records."
-  />
-);
-
-const EmailMePdfDialog = ({
-  open,
-  setOpen,
-}: {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-}) => (
-  <EmailDialog
-    open={open}
-    setOpen={setOpen}
-    title="PDF"
-    description="Enter your email below and we'll email you a copy of your invoice momentarily."
-    additionalDescription=""
-  />
-);
-
 export const TopRightButtons: React.FC = () => {
   return (
     <div id="top-right-buttons" className="absolute top-2 right-2 print:hidden">
       <NewButton />
       <PrintButton />
-      <PDFButton />
       <ClearButton />
       <PresetButton />
     </div>

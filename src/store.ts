@@ -233,21 +233,6 @@ class AppStateStore {
     this.state = presetInvoice();
     this.saveToLocalStorage();
   };
-
-  sendInvoice = async (email: string, token: string) => {
-    const invoice = this.state;
-
-    const response = await fetch('https://pdf.invoice-kitchen.workers.dev', {
-      method: 'POST',
-      body: JSON.stringify({ email, invoice, token }),
-    });
-
-    if (response.status === 200) {
-      return true;
-    }
-
-    return false;
-  };
 }
 
 export let store: AppStateStore | undefined = undefined;
