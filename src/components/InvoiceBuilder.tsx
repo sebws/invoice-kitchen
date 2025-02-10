@@ -196,7 +196,7 @@ const Input: React.FC<InputProps> = ({
         ></input>
       )}
       <input
-        className="w-full"
+        className="w-full print:appearance-none"
         placeholder={placeholder}
         value={value}
         onChange={onChange}
